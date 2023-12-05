@@ -1,26 +1,94 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
-public class Main {
+public class Main{
+    
     public static void main(String[] args) {
-        // criando instâncias de músicas
-        Musica musica1 = new Musica("Música 1", "Artista 1", 3.5);
-        Musica musica2 = new Musica("Música 2", "Artista 2", 4.2);
-        Musica musica3 = new Musica("Música 3", "Artista 3", 2.8);
 
-        // criando instâncias de playlists
-        List<Musica> musicasPlaylist = new ArrayList<>();
-        musicasPlaylist.add(musica1);
-        musicasPlaylist.add(musica2);
-        musicasPlaylist.add(musica3);
+        Scanner sc = new Scanner(System.in);
 
-        Playlist playlist = new Playlist(musicasPlaylist);
-        PlaylistFavoritas playlistFavoritas = new PlaylistFavoritas(musicasPlaylist, List.of(musica1, musica2));
-        PlaylistTemas playlistTemas = new PlaylistTemas(musicasPlaylist, "MPB");
+        File path = new File("SongCSV.csv");
 
-        // testando polimorfismo
-        System.out.println("Tempo total da Playlist: " + playlist.calcularTempoTotal() + " minutos");
-        System.out.println("Tempo total da Playlist Favoritas: " + playlistFavoritas.calcularTempoTotal() + " minutos");
-        System.out.println("Tempo total da Playlist Temas: " + playlistTemas.calcularTempoTotal() + " minutos");
+        List <Musica> lis = new ArrayList<>();
+        List <Musica> lisTema = new ArrayList<>();
+        List <Musica> lisFavorita = new ArrayList<>();
+        
+        int menu;
+        boolean loopMenu = true;
+
+        //Adicionando musicas ao array lis (Todo o arquivo csv)
+        try(BufferedReader br = new BufferedReader(new FileReader(path))) {
+            String lendo = br.readLine();
+            while (lendo!=null) {
+                String[] cortar = lendo.split(",");
+                String artista = cortar[1];
+                Double duracao = Double.parseDouble(cortar[2]);
+                String titulo = cortar[3];            
+                lis.add(new Musica(titulo, artista, duracao));
+                
+                lendo = br.readLine();
+            }
+        } 
+        
+        catch (IOException e) {
+            System.out.println("erro"+e.getLocalizedMessage());
+        }
+        
+        //Adicionando musicas ao array lisTema (todos os indices pares)
+        for (int i = 0; i < lis.size(); i += 2) {
+            lisTema.add(lis.get(i));
+        }
+
+        //Adicionando musicas ao array lisFavoritas (todos os indices impares)
+        for (int i = 1; i < lis.size(); i += 2) {
+            lisFavorita.add(lis.get(i));
+        }
+        
+        //Passa os arrays aos respectivos objetos playlist 
+        Playlist play = new Playlist(lis);
+        PlaylistTemas tema = new PlaylistTemas(lisTema);
+        PlaylistFavoritas fav = new PlaylistFavoritas(lisFavorita);
+        
+
+        //Loop Menu
+        while (loopMenu == true) {
+            System.out.println("Escolha a playlist:");
+            System.out.println("1- Playlist Geral");
+            System.out.println("2- Playlist Eletrônica");
+            System.out.println("3- Playlist Favoritas");
+            menu = sc.nextInt();
+
+            switch (menu) {
+
+            case 1:
+            //Playlist Geral
+            play.ExixbirPlaylist();
+            play.TempoTotal();
+            break;
+
+            case 2:
+            //Playlist Tema
+            tema.setTemas("Eletrônica");
+            tema.ExixbirPlaylist();
+            tema.TempoTotal();
+            break;
+
+            case 3:
+            //Playlist Favorita
+            fav.ExixbirPlaylist();
+            fav.TempoTotal();
+            break;
+    
+            default:
+            System.out.println("ERROR");
+            break;
+            }
+        }
+        sc.close();  
     }
 }
